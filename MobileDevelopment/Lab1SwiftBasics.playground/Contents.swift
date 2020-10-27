@@ -107,3 +107,141 @@ for (group, students) in groupStudents {
 //print(passedPerGroup)
 //print(restOfStudentsPerGroup)
 
+
+
+enum TimeExceptions: Error {
+    case wrongHours
+    case wrongMinutes
+    case wrongSeconds
+}
+
+class TimeTG {
+    private var hours: UInt
+    private var minutes: UInt
+    private var seconds: UInt
+    
+    init() {
+        self.hours = 0
+        self.minutes = 0
+        self.seconds = 0
+    }
+    
+    init(hours: UInt, minutes: UInt, seconds: UInt) throws {
+        if (hours < 0 || hours > 23) {
+            throw TimeExceptions.wrongHours
+        }
+        if (minutes < 0 || minutes > 59) {
+            throw TimeExceptions.wrongMinutes
+        }
+        if (seconds < 0 || seconds > 59) {
+            throw TimeExceptions.wrongSeconds
+        }
+        self.hours = hours
+        self.minutes = minutes
+        self.seconds = seconds
+    }
+    
+    init(date: Date) {
+        let calendar = Calendar.current
+    
+        self.hours = UInt(calendar.component(.hour, from: date))
+        self.minutes = UInt(calendar.component(.minute, from: date))
+        self.seconds = UInt(calendar.component(.second, from: date))
+    }
+    
+    func format() -> String {
+        if (hours == 0) {
+            return ("12:\(minutes):\(seconds) AM")
+            
+        } else if (hours == 12) {
+            return ("12:\(minutes):\(seconds) PM")
+            
+        } else if (hours < 12) {
+            return ("\(hours):\(minutes):\(seconds) AM")
+            
+        } else {
+            return ("\(hours - 12):\(minutes):\(seconds) PM")
+        }
+    }
+    
+    func sum(time: TimeTG) -> TimeTG {
+        return TimeTG.sum(time1: self, time2: time)
+    }
+    
+    func sub(time: TimeTG) -> TimeTG {
+         return TimeTG.sub(time1: self, time2: time)
+    }
+    
+    class func sum(time1: TimeTG, time2: TimeTG) -> TimeTG {
+        var overflow: UInt;
+        var sum: UInt;
+
+        sum = time1.seconds + time2.seconds;
+        let seconds = sum % 60;
+        overflow = sum / 60;
+
+        sum = time1.minutes + time2.minutes + overflow;
+        let minutes = sum % 60;
+        overflow = sum / 60;
+
+        sum = time1.hours + time2.hours + overflow;
+        let hours = sum % 24;
+
+        return try! TimeTG(hours: hours, minutes: minutes, seconds: seconds)
+    }
+
+    class func sub(time1: TimeTG, time2: TimeTG) -> TimeTG {
+        var overflow: UInt;
+        var diff: UInt;
+
+        if (time2.seconds > time1.seconds) {
+            diff = 60 + time1.seconds - time2.seconds;
+            overflow = 1;
+        } else {
+            diff = time1.seconds - time2.seconds;
+            overflow = 0;
+        }
+        let seconds = diff;
+
+        if (time2.minutes + overflow > time1.minutes) {
+            diff = 60 + time1.minutes - time2.minutes - overflow;
+            overflow = 1;
+        } else {
+            diff = time1.minutes - time2.minutes - overflow;
+            overflow = 0;
+        }
+        let minutes = diff;
+
+        if (time2.hours + overflow > time1.hours) {
+            diff = 24 + time1.hours - time2.hours - overflow;
+            overflow = 1;
+        } else {
+            diff = time1.hours - time2.hours - overflow;
+        }
+        let hours = diff;
+
+        return try! TimeTG(hours: hours, minutes: minutes, seconds: seconds)
+    }
+    
+}
+
+
+var time = TimeTG()
+var time1 = try TimeTG(hours: 16, minutes: 45, seconds: 23)
+var time2 = try TimeTG(hours: 3, minutes: 54, seconds: 48)
+
+print("intitial")
+print(time.format())
+print(time1.format())
+print(time2.format())
+
+print("sum")
+print(time.sum(time: time1).format())
+print(time1.sum(time: time2).format())
+print(time2.sum(time: time1).format())
+
+print("sub")
+print(time.sub(time: time1).format())
+print(time1.sub(time: time2).format())
+print(time2.sub(time: time1).format())
+
